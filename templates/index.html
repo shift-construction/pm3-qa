@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PM3 Tender Q&A</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-center align-items-center mb-4">
+            <img src="https://bestoutcome.com/wp-content/themes/MammothPress/dist/assets/images/logo.png" alt="Logo" style="height: 50px; margin-right: 15px;">
+            <h1 class="text-center mb-0">PM3 Tender Q&A</h1>
+        </div>
+        <form id="questionForm">
+            <div class="form-group">
+                <label for="question">Enter your question:</label>
+                <input type="text" class="form-control" id="question" placeholder="What happens during an outage?" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        <hr>
+        <!-- Lottie Animation for Loading -->
+        <div id="loadingAnimation" class="text-center mt-4" style="display: none;">
+            <lottie-player src="https://lottie.host/f19de61d-20cd-4947-84be-c45c392ae947/iakm7PZVMV.json" 
+                background="#ffffff" speed="1" style="width: 300px; height: 300px" loop autoplay>
+            </lottie-player>
+            <p>Loading, please wait...</p>
+        </div>
+        <!-- Response Container -->
+        <div id="responseContainer" class="mt-4" style="display: none;">
+            <h3>Response:</h3>
+            <p id="responseText"></p>
+        </div>
+        <!-- Results Container -->
+        <div id="resultsContainer" class="mt-4" style="display: none;">
+            <h3>Related Documents:</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Answer</th>
+                        <th>Category</th>
+                        <th>Source Document</th>
+                        <th>Source Reference</th>
+                        <th>Sub-Category</th>
+                        <th>Document Category</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#questionForm').submit(function(event) {
+                event.preventDefault();
+
+                // Show the loading animation
+                $('#loadingAnimation').show();
+                $('#responseContainer').hide();
+                $('#resultsContainer').hide();
+
+                var question = $('#question').val();
+
+                $.ajax({
+                    url: '/query',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ question: question }),
+                    success: function(data) {
+                        // Hide the loading animation
+                        $('#loadingAnimation').hide();
+
+                        // Show the response
+                        $('#responseText').html(data.response);
+                        $('#responseContainer').show();
+
+                        // Populate and show the results table
+                        var results = data.results;
+                        var resultsTableBody = $('#resultsTableBody');
+                        resultsTableBody.empty();
+
+                        results.forEach(function(result) {
+                            var row = `
+                                <tr>
+                                    <td>${result['Answer']}</td>
+                                    <td>${result['Category']}</td>
+                                    <td>${result['Source Document']}</td>
+                                    <td>${result['Source Reference']}</td>
+                                    <td>${result['Sub-Category']}</td>
+                                    <td>${result['﻿Document Category']}</td>
+                                </tr>`;
+                            resultsTableBody.append(row);
+                        });
+
+                        $('#resultsContainer').show();
+                    },
+                    error: function() {
+                        // Hide the loading animation
+                        $('#loadingAnimation').hide();
+                        alert('An error occurred. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
